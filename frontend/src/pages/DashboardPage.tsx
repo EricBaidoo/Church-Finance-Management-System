@@ -26,12 +26,25 @@ export default function DashboardPage() {
         setLoading(true);
         setError('');
         
+        console.log('Fetching dashboard data...');
+        
         // Fetch all data with proper error handling
         const [donationsRes, expensesRes, offeringTypesRes] = await Promise.all([
-          apiService.listDonations(1, 5).catch(() => ({ data: { data: [] } })),
-          apiService.listExpenses(1, 5).catch(() => ({ data: { data: [] } })),
-          apiService.listActiveOfferingTypes().catch(() => ({ data: { data: [] } })),
+          apiService.listDonations(1, 5).catch((err) => {
+            console.error('Donations fetch error:', err);
+            return { data: { data: [] } };
+          }),
+          apiService.listExpenses(1, 5).catch((err) => {
+            console.error('Expenses fetch error:', err);
+            return { data: { data: [] } };
+          }),
+          apiService.listActiveOfferingTypes().catch((err) => {
+            console.error('Offering types fetch error:', err);
+            return { data: { data: [] } };
+          }),
         ]);
+
+        console.log('API responses:', { donationsRes, expensesRes, offeringTypesRes });
 
         const donations = donationsRes.data.data || donationsRes.data || [];
         const expenses = expensesRes.data.data || expensesRes.data || [];
@@ -76,6 +89,8 @@ export default function DashboardPage() {
         }));
 
         setOfferingTypes(enrichedOfferings);
+        
+        console.log('Dashboard data set:', { stats: { totalDonations, totalExpenses }, offeringTypes: enrichedOfferings });
       } catch (err: any) {
         console.error('Dashboard error:', err);
         setError('Failed to load dashboard data');
@@ -91,11 +106,14 @@ export default function DashboardPage() {
         setOfferingTypes([]);
       } finally {
         setLoading(false);
+        console.log('Dashboard loading complete');
       }
     };
 
     fetchData();
   }, [timeFilter]);
+
+  console.log('Rendering dashboard, loading:', loading, 'error:', error, 'stats:', stats);
 
   if (loading) {
     return (
@@ -103,6 +121,25 @@ export default function DashboardPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-500">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Ensure we always have valid stats
+  if (!stats) {
+    console.error('Stats is null after loading!');
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h3 className="text-red-800 font-semibold mb-2">Unable to Load Dashboard</h3>
+          <p className="text-red-600">There was an error loading the dashboard. Please try refreshing the page.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Refresh Page
+          </button>
         </div>
       </div>
     );
@@ -281,7 +318,7 @@ export default function DashboardPage() {
                   <div key={category} className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium text-gray-700 capitalize">{category}</span>
-                      <span className="text-gray-900 font-bold">${amount.toFixed(2)}</span>
+                      <span className="text-gray-900 font-bold">${parseFloat(amount || 0).toFixed(2)}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                       <div
@@ -321,7 +358,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-green-600">${donation.amount.toFixed(2)}</p>
+                    <p className="font-bold text-green-600">${parseFloat(donation.amount || 0).toFixed(2)}</p>
                     <p className="text-xs text-gray-500">
                       {new Date(donation.donationDate).toLocaleDateString()}
                     </p>
@@ -349,7 +386,7 @@ export default function DashboardPage() {
                     <p className="text-sm text-gray-500">{expense.description?.substring(0, 50)}...</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-red-600">${expense.amount.toFixed(2)}</p>
+                    <p className="font-bold text-red-600">${parseFloat(expense.amount || 0).toFixed(2)}</p>
                     <span
                       className={`text-xs px-2 py-1 rounded ${
                         expense.status === 'approved'
