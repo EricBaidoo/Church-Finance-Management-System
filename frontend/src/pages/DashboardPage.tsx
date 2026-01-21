@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import apiService from '../services';
 
 interface DashboardStats {
-  totalDonations: number;
+  totalOfferings: number;
   totalExpenses: number;
   balance: number;
-  donationsByType?: Record<string, number>;
-  donationsByOfferingType?: Array<{ name: string; total: number; count: number }>;
+  offeringsByType?: Record<string, number>;
+  offeringsByOfferingType?: Array<{ name: string; total: number; count: number }>;
   expensesByCategory?: Record<string, number>;
-  recentDonations?: any[];
+  recentOfferings?: any[];
   recentExpenses?: any[];
   monthlyTrend?: Array<{ month: string; donations: number; expenses: number }>;
 }
@@ -29,9 +29,9 @@ export default function DashboardPage() {
         console.log('Fetching dashboard data...');
         
         // Fetch all data with proper error handling
-        const [donationsRes, expensesRes, offeringTypesRes] = await Promise.all([
+        const [offeringsRes, expensesRes, offeringTypesRes] = await Promise.all([
           apiService.listDonations(1, 5).catch((err) => {
-            console.error('Donations fetch error:', err);
+            console.error('Offerings fetch error:', err);
             return { data: { data: [] } };
           }),
           apiService.listExpenses(1, 5).catch((err) => {
@@ -44,19 +44,19 @@ export default function DashboardPage() {
           }),
         ]);
 
-        console.log('API responses:', { donationsRes, expensesRes, offeringTypesRes });
+        console.log('API responses:', { offeringsRes, expensesRes, offeringTypesRes });
 
-        const donations = donationsRes.data.data || donationsRes.data || [];
+        const offerings = offeringsRes.data.data || offeringsRes.data || [];
         const expenses = expensesRes.data.data || expensesRes.data || [];
-        const offerings = offeringTypesRes.data.data || offeringTypesRes.data || [];
+        const offeringTypesData = offeringTypesRes.data.data || offeringTypesRes.data || [];
 
-        // Calculate stats from donations and expenses
-        const totalDonations = donations.reduce((sum: number, d: any) => sum + parseFloat(d.amount || 0), 0);
+        // Calculate stats from offerings and expenses
+        const totalOfferings = offerings.reduce((sum: number, d: any) => sum + parseFloat(d.amount || 0), 0);
         const totalExpenses = expenses.reduce((sum: number, e: any) => sum + parseFloat(e.amount || 0), 0);
 
         // Group by offering type
         const offeringMap = new Map();
-        donations.forEach((d: any) => {
+        offerings.forEach((d: any) => {
           const typeName = d.offeringType?.name || d.donationType || 'Other';
           const current = offeringMap.get(typeName) || { total: 0, count: 0 };
           offeringMap.set(typeName, {
@@ -73,16 +73,16 @@ export default function DashboardPage() {
         });
 
         setStats({
-          totalDonations,
+          totalOfferings,
           totalExpenses,
-          balance: totalDonations - totalExpenses,
-          recentDonations: donations.slice(0, 5),
+          balance: totalOfferings - totalExpenses,
+          recentOfferings: offerings.slice(0, 5),
           recentExpenses: expenses.slice(0, 5),
           expensesByCategory: expenseMap,
         });
 
         // Enrich offering types with totals
-        const enrichedOfferings = offerings.map((type: any) => ({
+        const enrichedOfferings = offeringTypesData.map((type: any) => ({
           ...type,
           total: offeringMap.get(type.name)?.total || 0,
           count: offeringMap.get(type.name)?.count || 0,
@@ -90,16 +90,16 @@ export default function DashboardPage() {
 
         setOfferingTypes(enrichedOfferings);
         
-        console.log('Dashboard data set:', { stats: { totalDonations, totalExpenses }, offeringTypes: enrichedOfferings });
+        console.log('Dashboard data set:', { stats: { totalOfferings, totalExpenses }, offeringTypes: enrichedOfferings });
       } catch (err: any) {
         console.error('Dashboard error:', err);
         setError('Failed to load dashboard data');
         // Set empty state to prevent blank screen
         setStats({
-          totalDonations: 0,
+          totalOfferings: 0,
           totalExpenses: 0,
           balance: 0,
-          recentDonations: [],
+          recentOfferings: [],
           recentExpenses: [],
           expensesByCategory: {},
         });
@@ -145,9 +145,9 @@ export default function DashboardPage() {
     );
   }
 
-  const totalDonations = stats?.totalDonations || 0;
+  const totalOfferings = stats?.totalOfferings || 0;
   const totalExpenses = stats?.totalExpenses || 0;
-  const balance = totalDonations - totalExpenses;
+  const balance = totalOfferings - totalExpenses;
 
   return (
     <div className="space-y-6">
@@ -210,10 +210,10 @@ export default function DashboardPage() {
             <div className="text-5xl opacity-80">💝</div>
             <div className="bg-white bg-opacity-20 rounded-lg px-3 py-1 text-sm">Income</div>
           </div>
-          <p className="text-white text-opacity-90 text-sm font-medium mb-1">Total Donations</p>
-          <p className="text-4xl font-bold">${totalDonations.toFixed(2)}</p>
+          <p className="text-white text-opacity-90 text-sm font-medium mb-1">Total Offerings</p>
+          <p className="text-4xl font-bold">${totalOfferings.toFixed(2)}</p>
           <p className="text-green-100 text-sm mt-2">
-            {stats?.recentDonations?.length || 0} recent transactions
+            {stats?.recentOfferings?.length || 0} recent transactions
           </p>
         </div>
 
@@ -259,13 +259,13 @@ export default function DashboardPage() {
         {/* Donations by Offering Type */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">💝 Donations by Type</h2>
+            <h2 className="text-xl font-bold text-gray-900">💝 Offerings by Type</h2>
             <span className="text-sm text-gray-500">This {timeFilter}</span>
           </div>
           <div className="space-y-4">
             {offeringTypes.length > 0 ? (
               offeringTypes.map((type, index) => {
-                const percentage = totalDonations > 0 ? ((type.total || 0) / totalDonations) * 100 : 0;
+                const percentage = totalOfferings > 0 ? ((type.total || 0) / totalOfferings) * 100 : 0;
                 const colors = [
                   'bg-blue-500',
                   'bg-green-500',
@@ -339,34 +339,34 @@ export default function DashboardPage() {
 
       {/* Recent Transactions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Donations */}
+        {/* Recent Offerings */}
         <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Donations</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Offerings</h2>
           <div className="space-y-3">
-            {stats?.recentDonations && stats.recentDonations.length > 0 ? (
-              stats.recentDonations.map((donation: any) => (
+            {stats?.recentOfferings && stats.recentOfferings.length > 0 ? (
+              stats.recentOfferings.map((offering: any) => (
                 <div
-                  key={donation.id}
+                  key={offering.id}
                   className="flex items-center justify-between p-3 bg-green-50 rounded-lg hover:bg-green-100 transition"
                 >
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">
-                      {donation.member?.name || `Member #${donation.memberId}`}
+                      {offering.member?.name || `Member #${offering.memberId}`}
                     </p>
                     <p className="text-sm text-gray-500 capitalize">
-                      {donation.offeringType?.name || donation.donationType}
+                      {offering.offeringType?.name || offering.donationType}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-green-600">${parseFloat(donation.amount || 0).toFixed(2)}</p>
+                    <p className="font-bold text-green-600">${parseFloat(offering.amount || 0).toFixed(2)}</p>
                     <p className="text-xs text-gray-500">
-                      {new Date(donation.donationDate).toLocaleDateString()}
+                      {new Date(offering.donationDate).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 text-center py-8">No recent donations</p>
+              <p className="text-gray-500 text-center py-8">No recent offerings</p>
             )}
           </div>
         </div>

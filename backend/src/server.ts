@@ -12,6 +12,8 @@ import expenseRoutes from './routes/expenses.js';
 import budgetRoutes from './routes/budgets.js';
 import reportRoutes from './routes/reports.js';
 import offeringTypeRoutes from './routes/offeringTypes.js';
+import memberRoutes from './routes/members.js';
+import pledgeRoutes from './routes/pledges.js';
 
 // Initialize Express
 const app: Express = express();
@@ -39,6 +41,8 @@ app.use('/api/donations', donationRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/members', memberRoutes);
+app.use('/api/pledges', pledgeRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

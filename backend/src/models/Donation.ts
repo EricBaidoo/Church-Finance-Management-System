@@ -2,6 +2,7 @@ import { DataTypes, Model, Optional } from 'sequelize';
 import sequelize from '../config/database.js';
 import User from './User.js';
 import OfferingType from './OfferingType.js';
+import Member from './Member.js';
 
 interface DonationAttributes {
   id: number;
@@ -48,7 +49,7 @@ Donation.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: User,
+        model: Member,
         key: 'id'
       },
       onDelete: 'RESTRICT'

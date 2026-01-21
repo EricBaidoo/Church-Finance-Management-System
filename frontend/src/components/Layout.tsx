@@ -42,7 +42,7 @@ export default function Layout() {
                 to="/donations"
                 className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-800 rounded transition"
               >
-                💝 Donations
+                💝 Offerings
               </Link>
             </li>
             <li>
