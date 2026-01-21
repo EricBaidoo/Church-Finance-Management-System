@@ -7,8 +7,8 @@ import apiService from '../services';
 export default function LoginPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [email, setEmail] = useState('admin@church.local');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('admin@church.com');
+  const [password, setPassword] = useState('admin123');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -53,7 +53,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="admin@church.local"
+              placeholder="admin@church.com"
               required
             />
           </div>
@@ -83,8 +83,8 @@ export default function LoginPage() {
 
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded text-sm text-gray-700">
           <p className="font-semibold mb-2">Demo Credentials:</p>
-          <p>Email: <code className="bg-white px-2 py-1 rounded">admin@church.local</code></p>
-          <p>Password: <code className="bg-white px-2 py-1 rounded">password</code></p>
+          <p>Email: <code className="bg-white px-2 py-1 rounded">admin@church.com</code></p>
+          <p>Password: <code className="bg-white px-2 py-1 rounded">admin123</code></p>
         </div>
       </div>
     </div>

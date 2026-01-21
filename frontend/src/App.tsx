@@ -13,6 +13,8 @@ import { RootState } from './store';
 export default function App() {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
+  console.log('App rendering, isAuthenticated:', isAuthenticated);
+
   return (
     <Router>
       <Routes>
@@ -33,6 +35,7 @@ export default function App() {
         </Route>
 
         <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
