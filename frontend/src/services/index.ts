@@ -52,6 +52,21 @@ export const budgetService = {
   delete: (id: number) => api.delete(`/budgets/${id}`),
 };
 
+export const offeringTypeService = {
+  listActive: () => api.get('/offering-types/active'),
+  
+  list: (page = 1, limit = 50) =>
+    api.get('/offering-types', { params: { page, limit } }),
+  
+  get: (id: number) => api.get(`/offering-types/${id}`),
+  
+  create: (data: any) => api.post('/offering-types', data),
+  
+  update: (id: number, data: any) => api.put(`/offering-types/${id}`, data),
+  
+  delete: (id: number) => api.delete(`/offering-types/${id}`),
+};
+
 export const reportService = {
   list: (page = 1, limit = 15) =>
     api.get('/reports', { params: { page, limit } }),
@@ -93,6 +108,13 @@ const apiService = {
   getReport: (id: number) => reportService.get(id),
   generateReport: (data: any) => reportService.generate(data),
   getDashboard: () => reportService.dashboard(),
+  
+  listActiveOfferingTypes: () => offeringTypeService.listActive(),
+  listOfferingTypes: (page?: number, limit?: number) => offeringTypeService.list(page, limit),
+  getOfferingType: (id: number) => offeringTypeService.get(id),
+  createOfferingType: (data: any) => offeringTypeService.create(data),
+  updateOfferingType: (id: number, data: any) => offeringTypeService.update(id, data),
+  deleteOfferingType: (id: number) => offeringTypeService.delete(id),
 };
 
 export default apiService;

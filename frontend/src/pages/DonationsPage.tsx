@@ -1,18 +1,28 @@
 import { useEffect, useState } from 'react';
 import apiService from '../services';
 
+interface OfferingType {
+  id: number;
+  name: string;
+  code: string;
+  description: string;
+  isActive: boolean;
+}
+
 export default function DonationsPage() {
   const [donations, setDonations] = useState<any[]>([]);
+  const [offeringTypes, setOfferingTypes] = useState<OfferingType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     memberId: '',
     amount: '',
-    type: 'tithe',
+    offeringTypeId: '',
+    donationType: 'tithe',
     paymentMethod: 'cash',
-    date: new Date().toISOString().split('T')[0],
-    notes: '',
+    donationDate: new Date().toISOString().split('T')[0],
+    description: '',
   });
 
   const fetchDonations = async () => {
@@ -28,8 +38,18 @@ export default function DonationsPage() {
     }
   };
 
+  const fetchOfferingTypes = async () => {
+    try {
+      const response = await apiService.listActiveOfferingTypes();
+      setOfferingTypes(response.data.data || []);
+    } catch (err) {
+      console.error('Failed to load offering types:', err);
+    }
+  };
+
   useEffect(() => {
     fetchDonations();
+    fetchOfferingTypes();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,10 +62,11 @@ export default function DonationsPage() {
       setFormData({
         memberId: '',
         amount: '',
-        type: 'tithe',
+        offeringTypeId: '',
+        donationType: 'tithe',
         paymentMethod: 'cash',
-        date: new Date().toISOString().split('T')[0],
-        notes: '',
+        donationDate: new Date().toISOString().split('T')[0],
+        description: '',
       });
       setShowForm(false);
       fetchDonations();
@@ -98,14 +119,17 @@ export default function DonationsPage() {
                 required
               />
               <select
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                value={formData.offeringTypeId}
+                onChange={(e) => setFormData({ ...formData, offeringTypeId: e.target.value })}
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                required
               >
-                <option value="tithe">Tithe</option>
-                <option value="offering">Offering</option>
-                <option value="building_fund">Building Fund</option>
-                <option value="other">Other</option>
+                <option value="">Select Offering Type</option>
+                {offeringTypes.map((type) => (
+                  <option key={type.id} value={type.id}>
+                    {type.name}
+                  </option>
+                ))}
               </select>
               <select
                 value={formData.paymentMethod}
@@ -120,14 +144,14 @@ export default function DonationsPage() {
             </div>
             <input
               type="date"
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              value={formData.donationDate}
+              onChange={(e) => setFormData({ ...formData, donationDate: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
             />
             <textarea
-              placeholder="Notes"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              placeholder="Description (optional)"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
               rows={3}
             />
