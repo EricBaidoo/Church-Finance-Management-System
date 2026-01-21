@@ -1,15 +1,32 @@
 import { Request, Response } from 'express';
+import { Op, Sequelize } from 'sequelize';
 import Expense from '../models/Expense.js';
 import User from '../models/User.js';
 
 export const getExpenses = async (req: Request, res: Response) => {
   try {
-    const { category, status, page = 1, limit = 15 } = req.query;
+    const { category, status, page = 1, limit = 15, search, startDate, endDate } = req.query;
     const offset = ((Number(page) - 1) * Number(limit)) || 0;
 
     let where: any = {};
     if (category) where.category = category;
     if (status) where.status = status;
+
+    // Search in vendor or description
+    if (search) {
+      where[Op.or] = [
+        { vendor: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } },
+        { referenceNumber: { [Op.like]: `%${search}%` } }
+      ];
+    }
+
+    // Date range filtering
+    if (startDate && endDate) {
+      where.expenseDate = {
+        [Op.between]: [new Date(startDate as string), new Date(endDate as string)]
+      };
+    }
 
     const { count, rows } = await Expense.findAndCountAll({
       where,
@@ -203,5 +220,113 @@ export const deleteExpense = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+// Analytics endpoints
+export const getExpenseStats = async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    let where: any = {};
+    if (startDate && endDate) {
+      where.expenseDate = {
+        [Op.between]: [new Date(startDate as string), new Date(endDate as string)]
+      };
+    }
+
+    // By category
+    const byCategory = await Expense.findAll({
+      attributes: [
+        'category',
+        [Sequelize.fn('SUM', Sequelize.col('amount')), 'total'],
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
+      ],
+      where,
+      group: ['category'],
+      raw: true
+    });
+
+    // By status
+    const byStatus = await Expense.findAll({
+      attributes: [
+        'status',
+        [Sequelize.fn('SUM', Sequelize.col('amount')), 'total'],
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
+      ],
+      where,
+      group: ['status'],
+      raw: true
+    });
+
+    // Total
+    const totalStats = await Expense.findOne({
+      attributes: [[Sequelize.fn('SUM', Sequelize.col('amount')), 'total']],
+      where,
+      raw: true
+    });
+
+    res.json({
+      success: true,
+      data: {
+        byCategory,
+        byStatus,
+        total: (totalStats as any)?.total || 0,
+        totalCount: byCategory.reduce((sum: number, s: any) => sum + parseInt(s.count), 0)
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export const getExpenseTrends = async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    let where: any = {};
+    if (startDate && endDate) {
+      where.expenseDate = {
+        [Op.between]: [new Date(startDate as string), new Date(endDate as string)]
+      };
+    }
+
+    const trends = await Expense.findAll({
+      attributes: [
+        [Sequelize.fn('DATE', Sequelize.col('expenseDate')), 'date'],
+        [Sequelize.fn('SUM', Sequelize.col('amount')), 'amount'],
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
+      ],
+      where,
+      group: [Sequelize.fn('DATE', Sequelize.col('expenseDate'))],
+      order: [[Sequelize.fn('DATE', Sequelize.col('expenseDate')), 'ASC']],
+      raw: true
+    });
+
+    res.json({
+      success: true,
+      data: trends
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export const getPendingExpenses = async (req: Request, res: Response) => {
+  try {
+    const expenses = await Expense.findAll({
+      where: { status: 'pending' },
+      include: [
+        { model: User, as: 'approver', attributes: ['id', 'name'] }
+      ],
+      order: [['expenseDate', 'ASC']]
+    });
+
+    res.json({
+      success: true,
+      data: expenses
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
   }
 };

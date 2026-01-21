@@ -17,10 +17,27 @@ interface AuthState {
   error: string | null;
 }
 
+const getInitialUser = () => {
+  try {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  } catch {
+    return null;
+  }
+};
+
+const getInitialToken = () => {
+  try {
+    return localStorage.getItem('token');
+  } catch {
+    return null;
+  }
+};
+
 const initialState: AuthState = {
-  user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null,
-  token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token'),
+  user: getInitialUser(),
+  token: getInitialToken(),
+  isAuthenticated: !!getInitialToken(),
   loading: false,
   error: null,
 };

@@ -70,7 +70,7 @@ export const generateReport = async (req: Request, res: Response) => {
       totalDonations: parseFloat(totalDonations.toString()),
       totalExpenses: parseFloat(totalExpenses.toString()),
       netBalance: parseFloat((totalDonations - totalExpenses).toString()),
-      generatedBy: req.userId,
+      generatedBy: req.userId!,
       data: {
         donationsByType: await Donation.findAll({
           attributes: [

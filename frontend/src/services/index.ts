@@ -62,3 +62,37 @@ export const reportService = {
   
   dashboard: () => api.get('/reports/dashboard'),
 };
+
+// Default export with all methods
+const apiService = {
+  login: (email: string, password: string) => authService.login(email, password),
+  logout: () => authService.logout(),
+  getMe: () => authService.getMe(),
+  
+  listDonations: (page?: number, limit?: number) => donationService.list(page, limit),
+  getDonation: (id: number) => donationService.get(id),
+  createDonation: (data: any) => donationService.create(data),
+  updateDonation: (id: number, data: any) => donationService.update(id, data),
+  deleteDonation: (id: number) => donationService.delete(id),
+  
+  listExpenses: (page?: number, limit?: number) => expenseService.list(page, limit),
+  getExpense: (id: number) => expenseService.get(id),
+  createExpense: (data: any) => expenseService.create(data),
+  updateExpense: (id: number, data: any) => expenseService.update(id, data),
+  approveExpense: (id: number) => expenseService.approve(id),
+  rejectExpense: (id: number) => expenseService.reject(id),
+  deleteExpense: (id: number) => expenseService.delete(id),
+  
+  listBudgets: (page?: number, limit?: number) => budgetService.list(page, limit),
+  getBudget: (id: number) => budgetService.get(id),
+  createBudget: (data: any) => budgetService.create(data),
+  updateBudget: (id: number, data: any) => budgetService.update(id, data),
+  deleteBudget: (id: number) => budgetService.delete(id),
+  
+  listReports: (page?: number, limit?: number) => reportService.list(page, limit),
+  getReport: (id: number) => reportService.get(id),
+  generateReport: (data: any) => reportService.generate(data),
+  getDashboard: () => reportService.dashboard(),
+};
+
+export default apiService;

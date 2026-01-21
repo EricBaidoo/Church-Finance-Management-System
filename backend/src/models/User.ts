@@ -17,17 +17,17 @@ interface UserAttributes {
 
 interface UserCreationAttributes extends Optional<UserAttributes, 'id'> {}
 
-class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
-  public id!: number;
-  public name!: string;
-  public email!: string;
-  public password!: string;
-  public role!: 'admin' | 'accountant' | 'pastor' | 'member';
-  public isActive!: boolean;
-  public phone?: string;
-  public address?: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+class User extends Model<UserAttributes, UserCreationAttributes> {
+  declare id: number;
+  declare name: string;
+  declare email: string;
+  declare password: string;
+  declare role: 'admin' | 'accountant' | 'pastor' | 'member';
+  declare isActive: boolean;
+  declare phone?: string;
+  declare address?: string;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   async comparePassword(password: string): Promise<boolean> {
     return await bcryptjs.compare(password, this.password);

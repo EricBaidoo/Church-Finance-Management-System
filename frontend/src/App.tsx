@@ -1,12 +1,39 @@
-import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import DonationsPage from './pages/DonationsPage';
+import ExpensesPage from './pages/ExpensesPage';
+import BudgetsPage from './pages/BudgetsPage';
+import ReportsPage from './pages/ReportsPage';
+import { useSelector } from 'react-redux';
+import { RootState } from './store';
 
 export default function App() {
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900">Church Finance Management</h1>
-        <p className="text-xl text-gray-600 mt-4">Loading...</p>
-      </div>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        
+        <Route
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/donations" element={<DonationsPage />} />
+          <Route path="/expenses" element={<ExpensesPage />} />
+          <Route path="/budgets" element={<BudgetsPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+        </Route>
+
+        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+      </Routes>
+    </Router>
   );
 }

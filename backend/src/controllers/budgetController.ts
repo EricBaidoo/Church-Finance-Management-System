@@ -51,7 +51,7 @@ export const createBudget = async (req: Request, res: Response) => {
       startDate,
       endDate,
       description,
-      createdBy: req.userId
+      createdBy: req.userId!,
     });
 
     const result = await Budget.findByPk(budget.id, {

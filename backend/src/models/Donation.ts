@@ -1,12 +1,14 @@
-import { DataTypes, Model, Optional, ForeignKey } from 'sequelize';
+import { DataTypes, Model, Optional } from 'sequelize';
 import sequelize from '../config/database.js';
 import User from './User.js';
+import OfferingType from './OfferingType.js';
 
 interface DonationAttributes {
   id: number;
   memberId: number;
   amount: number;
   donationType: 'tithe' | 'offering' | 'special' | 'other';
+  offeringTypeId?: number;
   description?: string;
   donationDate: Date;
   referenceNumber?: string;
@@ -24,6 +26,7 @@ class Donation extends Model<DonationAttributes, DonationCreationAttributes> imp
   public memberId!: number;
   public amount!: number;
   public donationType!: 'tithe' | 'offering' | 'special' | 'other';
+  public offeringTypeId?: number;
   public description?: string;
   public donationDate!: Date;
   public referenceNumber?: string;
@@ -53,6 +56,15 @@ Donation.init(
     amount: {
       type: DataTypes.DECIMAL(12, 2),
       allowNull: false
+    },
+    offeringTypeId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: OfferingType,
+        key: 'id'
+      },
+      onDelete: 'RESTRICT'
     },
     donationType: {
       type: DataTypes.ENUM('tithe', 'offering', 'special', 'other'),
